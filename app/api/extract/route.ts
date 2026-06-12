@@ -1,6 +1,15 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from "@google/generative-ai";
-
+async function retryRequest(fn, retries = 3) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      return await fn();
+    } catch (e) {
+      if (i === retries - 1) throw e;
+      await new Promise(r => setTimeout(r, 1000 * (i + 1)));
+    }
+  }
+}
 // 時間のゼロ埋め用ヘルパー関数
 const pad = (n: number) => String(n).padStart(2, "0");
 
@@ -18,7 +27,7 @@ export async function POST(request: Request) {
 
     const genAI = new GoogleGenerativeAI(apiKey);
     // 安定して高速な flash モデルを使用
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     // AIに「どのような形式で返してほしいか」を指示するシステムプロンプト
     const promptText = `
