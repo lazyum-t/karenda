@@ -30,7 +30,10 @@ export async function POST(request: Request) {
 
     const genAI = new GoogleGenerativeAI(apiKey);
     // 安定して高速な flash モデルを使用
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const models = [
+  "gemini-2.5-flash",
+  "gemini-1.5-pro"
+];
 
     // AIに「どのような形式で返してほしいか」を指示するシステムプロンプト
     const promptText = `
