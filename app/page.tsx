@@ -1252,23 +1252,16 @@ if (!mounted) return null;
   const showYear = view === "week"
     ? (weekStartDate.getFullYear() !== now.getFullYear())
     : (yr !== now.getFullYear());
-return (
-  <div
-    style={{
-      fontFamily:
-        "-apple-system,BlinkMacSystemFont,'Hiragino Sans','Yu Gothic UI',sans-serif",
-      width: "100%",
-      minHeight: "100dvh",
-      margin: 0,
-      background: "#fff",
-      display: "flex",
-      flexDirection: "column",
-      boxShadow: "none", // 全幅の場合は影は不要なら外す
-    }}
-  >
-    {/* コンテンツ */}
-  </div>
-);      <div style={{
+
+  return (
+    <div
+style={{
+maxWidth: "393px",
+width: "100%",
+margin: "0 auto",
+}}
+> 
+<div style={{
         position:"sticky",top:0,zIndex:10,background:"#fff",
         borderBottom:`1px solid ${BORDER_STRONG}`,
       }}>
