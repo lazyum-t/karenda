@@ -1257,7 +1257,8 @@ if (!mounted) return null;
     <div style={{
       fontFamily:"-apple-system,BlinkMacSystemFont,'Hiragino Sans','Yu Gothic UI',sans-serif",
       // ★ ここが一番のポイントです！ maxWidthを広げ、影を追加しました
-      maxWidth: 1024, 
+      const isMobile = window.innerWidth < 768;
+maxWidth: isMobile ? "100%" : 1200, 
       margin:"0 auto",background:"#fff",
       minHeight:"100vh",display:"flex",flexDirection:"column",
       boxShadow: "0 0 40px rgba(0,0,0,0.05)",
