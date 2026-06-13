@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 
 const STORAGE_KEY = "shared_calendar_v5";
-
 const COLORS = [
   { id:"blue",   bg:"#EBF4FF", border:"#93C5FD", text:"#1E40AF", dot:"#3B82F6" },
   { id:"green",  bg:"#F0FDF4", border:"#86EFAC", text:"#166534", dot:"#22C55E" },
@@ -14,7 +13,6 @@ const COLORS = [
   { id:"teal",   bg:"#F0FDFA", border:"#5EEAD4", text:"#115E59", dot:"#14B8A6" },
   { id:"red",    bg:"#FEF2F2", border:"#FCA5A5", text:"#991B1B", dot:"#EF4444" },
 ];
-
 const KW: Record<string, string> = {
   "健康":"green","医療":"green","病院":"green","診断":"green","薬":"green",
   "仕事":"blue","会議":"blue","ミーティング":"blue","レビュー":"blue","請求":"blue","締切":"blue",
@@ -162,7 +160,6 @@ function MonthView({ year, month, events, onDayClick, onEventClick }: any) {
   for(let i=0;i<firstDow;i++) cells.push(null);
   for(let d=1;d<=dim;d++) cells.push(d);
   while(cells.length%7) cells.push(null);
-
   const rows = [];
   for(let r=0;r<cells.length/7;r++) rows.push(cells.slice(r*7,r*7+7));
 
@@ -171,13 +168,13 @@ function MonthView({ year, month, events, onDayClick, onEventClick }: any) {
     const ds = `${year}-${pad(month+1)}-${pad(d)}`;
     return events.filter((e: any)=>e.date===ds).sort((a: any,b: any)=>(a.time||"zz").localeCompare(b.time||"zz"));
   };
-
   return (
     <div style={{flex:1}}>
       <div style={{
         display:"grid",gridTemplateColumns:"repeat(7,1fr)",
         background:"#FAFAFA",
         borderBottom:`1px solid ${BORDER_STRONG}`,
+        position:"sticky", top:0, zIndex:2
       }}>
         {WEEKDAYS.map((w,i)=>(
           <div key={w} style={{
@@ -203,7 +200,7 @@ function MonthView({ year, month, events, onDayClick, onEventClick }: any) {
                 key={ci}
                 onClick={() => d && onDayClick(d)}
                 style={{
-                  minHeight: 120, // ★ パソコン向けに高さを少し広げました（元の 90px から 120px へ）
+                  minHeight: 120, // パソコン向け高さ
                   borderRight: ci<6?`1px solid ${BORDER}`:"none",
                   padding: "6px 4px",
                   cursor: d?"pointer":"default",
@@ -253,19 +250,17 @@ function WeekView({ weekStart, events, onEventClick, onSlotClick }: any) {
   });
   const hours = Array.from({length:18}, (_,i) => i+6);
   const today = new Date();
-  const HOUR_H = 60; // 高さも少し広めに
+  const HOUR_H = 60;
   const now = new Date();
   const nowMins = (now.getHours()-6)*60 + now.getMinutes();
   const showNowLine = nowMins>=0 && nowMins<18*60;
-
   const getSlotEvents = (ds: string, h: number) => events.filter((e: any) => {
     if(e.date!==ds || !e.time || e.isAllDay) return false;
     const [eh] = e.time.split(":").map(Number);
     return eh === h;
   });
-
   return (
-    <div style={{overflowY:"auto",maxHeight:"calc(100vh - 210px)"}}>
+    <div style={{ position:"relative" }}>
       <div style={{
         display:"grid",gridTemplateColumns:"50px repeat(7,1fr)",
         borderBottom:`1px solid ${BORDER_STRONG}`,
@@ -381,7 +376,6 @@ function ListView({ events, onEventClick }: any) {
   const grouped: Record<string, any[]> = {};
   for(const ev of sorted) { (grouped[ev.date]||(grouped[ev.date]=[])).push(ev); }
   const dates = Object.keys(grouped).sort();
-
   if(!dates.length) return (
     <div style={{
       padding:"64px 24px",textAlign:"center",color:"#9CA3AF",
@@ -392,7 +386,6 @@ function ListView({ events, onEventClick }: any) {
       <div style={{fontSize:14}}>＋ボタンから追加できます</div>
     </div>
   );
-
   return (
     <div style={{paddingBottom:40}}>
       {dates.map(ds => {
@@ -482,7 +475,6 @@ function EventForm({ init, onSave, onDelete }: any) {
     isAllDay:false,repeat:"none",notes:"",colorId:"blue",
     ...(init||{})
   });
-
   const s = (k: string, v: any) => setF((p: any) => {
     const updated = {...p, [k]:v};
     if(k === "time" && !p.isAllDay) {
@@ -497,12 +489,10 @@ function EventForm({ init, onSave, onDelete }: any) {
     }
     return updated;
   });
-
   const handleTitleChange = (v: string) => {
     const ac = colorForTitle(v);
     setF((p: any) => ({...p, title:v, colorId: p._colorManual ? p.colorId : ac}));
   };
-
   const inp = {
     width:"100%",boxSizing:"border-box" as const,
     padding:"12px 14px",
@@ -512,7 +502,6 @@ function EventForm({ init, onSave, onDelete }: any) {
     color:"#111827",outline:"none",
     fontFamily:"inherit",
   };
-
   return (
     <div style={{display:"flex",flexDirection:"column",gap:20}}>
       <div>
@@ -735,12 +724,10 @@ function Sheet({ title, onClose, children, size="default" }: any) {
   const startY = useRef<number | null>(null);
   const [dragY, setDragY] = useState(0);
   const [closing, setClosing] = useState(false);
-
   const close = () => {
     setClosing(true);
     setTimeout(onClose, 220);
   };
-
   const handleTouchStart = (e: React.TouchEvent) => { startY.current = e.touches[0].clientY; };
   const handleTouchMove = (e: React.TouchEvent) => {
     if(startY.current === null) return;
@@ -769,7 +756,7 @@ function Sheet({ title, onClose, children, size="default" }: any) {
         style={{
           background:"#fff",
           borderRadius:"24px 24px 0 0",
-          width:"100%",maxWidth:600, // シートの幅も少し広げる
+          width:"100%",maxWidth:600,
           maxHeight: size==="large" ? "95vh" : "85vh",
           display:"flex",flexDirection:"column",
           transform: closing ? "translateY(100%)" : `translateY(${dragY}px)`,
@@ -810,14 +797,12 @@ function TextPanel({ onExtract }: any) {
   const [txt, setTxt] = useState("");
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState("");
-
   const examples = [
     "6月15日 午後3時 歯医者",
     "7月2日 10:00〜12:00 チームミーティング",
     "来週月曜 ランチ 山田さんと",
     "毎週水曜 20:00 ヨガ",
   ];
-
   const go = async () => {
     if(!txt.trim()) return;
     setLoading(true); setErr("");
@@ -828,7 +813,6 @@ function TextPanel({ onExtract }: any) {
     } catch(e: any) { setErr(`解析に失敗しました: ${e.message}`); }
     setLoading(false);
   };
-
   return (
     <div style={{display:"flex",flexDirection:"column",gap:16}}>
       <div style={{
@@ -876,7 +860,6 @@ function PendingReview({ pending, onConfirm, onClose }: any) {
   const [eds, setEds] = useState<any[]>(pending.map((e: any)=>({...e})));
 
   const toggle = (i: number) => setSel(s => s.includes(i) ? s.filter(x=>x!==i) : [...s,i]);
-
   const upd = (i: number, k: string, v: any) => setEds(es => es.map((e,idx) => {
     if(idx !== i) return e;
     const updated = {...e, [k]:v};
@@ -894,7 +877,6 @@ function PendingReview({ pending, onConfirm, onClose }: any) {
     }
     return updated;
   }));
-
   return (
     <div>
       <div style={{
@@ -987,11 +969,9 @@ function DayDetail({ date, events, onEventClick, onAddNew }: any) {
   const evs = events
     .filter((e: any) => e.date===date)
     .sort((a: any,b: any) => (a.time||"zz").localeCompare(b.time||"zz"));
-
   const d = new Date(date);
   const dow = ["日","月","火","水","木","金","土"][d.getDay()];
   const isSun = d.getDay()===0, isSat = d.getDay()===6;
-
   return (
     <div>
       <div style={{
@@ -1052,7 +1032,6 @@ function SyncBadge({ sync }: { sync: string }) {
     error:  { icon:"⚠", color:"#EF4444", label:"エラー" },
     idle:   { icon:"☁", color:"#9CA3AF", label:"" },
   };
-
   const c = configs[sync] || configs.idle;
   return (
     <div style={{display:"flex",alignItems:"center",gap:6}}>
@@ -1070,7 +1049,6 @@ export default function App() {
 
   const [yr, setYr] = useState(now.getFullYear());
   const [mo, setMo] = useState(now.getMonth());
-
   const [weekStartDate, setWeekStartDate] = useState(() => {
     const d = new Date(now);
     let dow = d.getDay(); dow = dow===0?6:dow-1;
@@ -1078,12 +1056,10 @@ export default function App() {
     d.setHours(0,0,0,0);
     return d;
   });
-
   const [events, setEvents] = useState<any[]>([]);
   const [sheet, setSheet] = useState<any>(null);
   const [sync, setSync] = useState("idle");
   const [imgLoading, setImgLoading] = useState(false);
-
   const fileRef = useRef<HTMLInputElement>(null);
 
   const load = useCallback(async () => {
@@ -1104,7 +1080,6 @@ export default function App() {
       console.error("Failed to load events:", e);
     }
   }, []);
-
   const save = useCallback(async (evs: any[]) => {
     setSync("saving");
     try {
@@ -1118,16 +1093,15 @@ export default function App() {
       setSync("error");
     }
   }, []);
-
   useEffect(() => {
-  setMounted(true);
-  load();
-  const t = setInterval(load, 30000);
-  return () => clearInterval(t);
-}, [load]);
-if (!mounted) return null;
-  const persist = async (evs: any[]) => { setEvents(evs); await save(evs); };
+    setMounted(true);
+    load();
+    const t = setInterval(load, 30000);
+    return () => clearInterval(t);
+  }, [load]);
 
+  if (!mounted) return null;
+  const persist = async (evs: any[]) => { setEvents(evs); await save(evs); };
   const saveEvent = async (form: any) => {
     const cleaned = {...form};
     delete cleaned._colorManual;
@@ -1142,7 +1116,6 @@ if (!mounted) return null;
     await persist(events.filter(e => e.id!==id));
     setSheet(null);
   };
-
   const addEvents = async (evs: any[]) => {
     await persist([...events, ...evs.map(e => ({
       id:genId(),
@@ -1165,15 +1138,12 @@ if (!mounted) return null;
     }
     setImgLoading(false);
   };
-
   const handleTextExtract = (evs: any[]) => {
     setSheet({ type:"pending", pending:evs.map(e=>({...e,colorId:colorForTitle(e.title)})) });
   };
-
   const openTextPanel = () => {
     setSheet({type:"text"});
   };
-
   const goToToday = () => {
     setYr(now.getFullYear());
     setMo(now.getMonth());
@@ -1194,7 +1164,6 @@ if (!mounted) return null;
     } else if(mo===0) { setMo(11); setYr(y=>y-1); }
     else setMo(m => m-1);
   };
-
   const next = () => {
     if(view==="week") {
       const d = new Date(weekStartDate);
@@ -1204,7 +1173,6 @@ if (!mounted) return null;
     } else if(mo===11) { setMo(0); setYr(y=>y+1); }
     else setMo(m => m+1);
   };
-
   const switchView = (v: string) => {
     if(v === "week" && view !== "week") {
       const d = new Date(yr, mo, 1);
@@ -1228,19 +1196,17 @@ if (!mounted) return null;
     todayWeek.setHours(0,0,0,0);
     return weekStartDate.getTime() === todayWeek.getTime();
   })();
+  const isCurrent = view === "week" ? isCurrentWeek : isCurrentMonth;
 
   const openNew = (date: string, time="") => setSheet({ type:"new", date, time });
-
   const handleDayClick = (d: number) => {
     const date = `${yr}-${pad(mo+1)}-${pad(d)}`;
     setSheet({ type:"day", date });
   };
-
   const handleEventClick = (ev: any) => setSheet({ type:"detail", ev });
 
   const monthKey = `${yr}-${pad(mo+1)}`;
   const monthEvents = events.filter(e => e.date?.startsWith(monthKey));
-
   const weekEnd = new Date(weekStartDate);
   weekEnd.setDate(weekEnd.getDate()+6);
   const weekLabel = weekStartDate.getMonth() === weekEnd.getMonth()
@@ -1248,36 +1214,32 @@ if (!mounted) return null;
     : `${weekStartDate.getMonth()+1}〜${weekEnd.getMonth()+1}月`;
 
   const headerLabel = view === "week" ? weekLabel : `${mo+1}月`;
-
   const showYear = view === "week"
     ? (weekStartDate.getFullYear() !== now.getFullYear())
     : (yr !== now.getFullYear());
 
   return (
-    <div
-style={{
-maxWidth: "393px",
-width: "100%",
-margin: "0 auto",
-}}
-> 
-<div style={{
-        position:"sticky",top:0,zIndex:10,background:"#fff",
+    <div style={{
+      width: "100%",
+      height: "100vh",
+      display: "flex",
+      flexDirection: "column",
+      margin: "0 auto",
+      background: "#fff"
+    }}> 
+      {/* ── ヘッダー領域 ── */}
+      <div style={{
+        zIndex:10, background:"#fff",
         borderBottom:`1px solid ${BORDER_STRONG}`,
+        flexShrink: 0
       }}>
+        {/* Row 1: タイトルとバッジ類・新規追加ボタン */}
         <div style={{
           display:"flex",alignItems:"center",
           justifyContent:"space-between",
           padding:"16px 20px 0",
         }}>
           <div style={{display:"flex",alignItems:"baseline",gap:10}}>
-            <button onClick={prev} style={{
-              background:"none",border:"none",
-              fontSize:24,cursor:"pointer",color:"#6B7280",
-              padding:"0",lineHeight:1,width:32,height:32,
-              display:"flex",alignItems:"center",justifyContent:"center",
-              borderRadius:"50%",
-            }}>‹</button>
             <div>
               <span style={{fontSize:28,fontWeight:700,color:"#111827",letterSpacing:"-0.5px"}}>
                 {headerLabel}
@@ -1288,15 +1250,22 @@ margin: "0 auto",
                 </span>
               )}
             </div>
-            <button onClick={next} style={{
-              background:"none",border:"none",
-              fontSize:24,cursor:"pointer",color:"#6B7280",
-              padding:"0",lineHeight:1,width:32,height:32,
-              display:"flex",alignItems:"center",justifyContent:"center",
-              borderRadius:"50%",
-            }}>›</button>
           </div>
           <div style={{display:"flex",alignItems:"center",gap:12}}>
+            {/* [+] 新規追加ボタンをここに移動し、機能を維持 */}
+            <button
+              onClick={()=>openNew(
+                view==="week"
+                  ? `${weekStartDate.getFullYear()}-${pad(weekStartDate.getMonth()+1)}-${pad(weekStartDate.getDate())}`
+                  : `${yr}-${pad(mo+1)}-${pad(now.getDate())}`
+              )}
+              style={{
+                width: 32, height: 32, borderRadius: "50%", border: "none",
+                background: "#111827", color: "#fff",
+                fontSize: 22, cursor: "pointer", lineHeight: 1, fontWeight: 700,
+                display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0
+              }}
+            >+</button>
             {view !== "week" && monthEvents.length > 0 && (
               <div style={{
                 fontSize:13,color:"#6B7280",
@@ -1310,6 +1279,7 @@ margin: "0 auto",
           </div>
         </div>
 
+        {/* Row 2: ビュー切り替えタブ（今月ボタンを外して等幅固定） */}
         <div style={{
           display:"flex",gap:8,
           padding:"12px 20px 0",
@@ -1324,16 +1294,9 @@ margin: "0 auto",
               transition:"all 0.15s",
             }}>{l}</button>
           ))}
-          {((view !== "week" && !isCurrentMonth) || (view === "week" && !isCurrentWeek)) && (
-            <button onClick={goToToday} style={{
-              padding:"10px 16px",borderRadius:10,border:"none",
-              background:"#EBF4FF",color:"#1E40AF",
-              fontSize:14,cursor:"pointer",fontWeight:600,
-              whiteSpace:"nowrap",
-            }}>今{view==="week"?"週":"月"}</button>
-          )}
         </div>
 
+        {/* Row 3: アクションボタンとナビゲーション（矢印・今月） */}
         <div style={{display:"flex",gap:8,padding:"12px 20px 16px"}}>
           <input ref={fileRef} type="file" accept="image/*,image/heic" style={{display:"none"}}
             onChange={e => { if(e.target.files?.[0]) handleImg(e.target.files[0]); e.target.value=""; }} />
@@ -1341,6 +1304,7 @@ margin: "0 auto",
             flex:1,padding:"10px 0",borderRadius:10,
             border:`1px solid ${BORDER_STRONG}`,background:"#FAFAFA",
             fontSize:14,cursor:"pointer",color:"#374151",fontWeight:600,
+            minWidth: 0, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis"
           }}>
             {imgLoading ? "⏳ 解析中" : "📷 写真から"}
           </button>
@@ -1348,22 +1312,32 @@ margin: "0 auto",
             flex:1,padding:"10px 0",borderRadius:10,
             border:`1px solid ${BORDER_STRONG}`,background:"#FAFAFA",
             fontSize:14,cursor:"pointer",color:"#374151",fontWeight:600,
+            minWidth: 0, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis"
           }}>✏️ テキストから</button>
-          <button
-            onClick={()=>openNew(
-              view==="week"
-                ? `${weekStartDate.getFullYear()}-${pad(weekStartDate.getMonth()+1)}-${pad(weekStartDate.getDate())}`
-                : `${yr}-${pad(mo+1)}-${pad(now.getDate())}`
-            )}
-            style={{
-              padding:"10px 24px",borderRadius:10,border:"none",
-              background:"#111827",color:"#fff",
-              fontSize:22,cursor:"pointer",lineHeight:1,fontWeight:700,
-            }}>+</button>
+          
+          {/* ナビゲーショングループ：ボタン配置がコロコロ変わらないように固定 */}
+          <div style={{
+            display: "flex", flexShrink: 0,
+            background: "#FAFAFA", borderRadius: 10,
+            border: `1px solid ${BORDER_STRONG}`, overflow: "hidden"
+          }}>
+            <button onClick={prev} style={{ padding: "0 12px", border: "none", background: "transparent", cursor: "pointer", fontSize: 20, color: "#374151" }}>‹</button>
+            <button onClick={goToToday} disabled={isCurrent} style={{
+              padding: "0 12px", borderLeft: `1px solid ${BORDER}`, borderRight: `1px solid ${BORDER}`, borderTop: "none", borderBottom: "none",
+              background: isCurrent ? "#F3F4F6" : "transparent",
+              color: isCurrent ? "#9CA3AF" : "#1E40AF",
+              cursor: isCurrent ? "default" : "pointer",
+              fontSize: 14, fontWeight: 600, whiteSpace: "nowrap"
+            }}>
+              今{view==="week"?"週":"月"}
+            </button>
+            <button onClick={next} style={{ padding: "0 12px", border: "none", background: "transparent", cursor: "pointer", fontSize: 20, color: "#374151" }}>›</button>
+          </div>
         </div>
       </div>
 
-      <div style={{flex:1}}>
+      {/* ── メインカレンダー領域 ── */}
+      <div style={{ flex: 1, overflowY: "auto", position: "relative" }}>
         {view==="month" && (
           <MonthView
             year={yr} month={mo} events={events}
@@ -1383,6 +1357,7 @@ margin: "0 auto",
         )}
       </div>
 
+      {/* ── 各種モーダルシート ── */}
       {sheet?.type==="day" && (
         <Sheet title="この日の予定" onClose={()=>setSheet(null)}>
           <DayDetail
